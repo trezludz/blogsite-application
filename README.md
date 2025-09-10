@@ -17,10 +17,10 @@ Backend is built with **Flask**, frontend with **Next.js (React + TypeScript)**.
 ## ⚙️ Backend Setup (Flask)
 
 ### 1. Install Python
-Make sure you have **Python 3.14** installed.
+- Make sure you have **Python 3.14** installed.
 
 ### 2. Create a virtual environment
-python -m venv venv
+- python -m venv venv
 Activate it:
 
 Windows:
@@ -29,32 +29,32 @@ venv\Scripts\activate
 macOS/Linux:
 source venv/bin/activate
 
-3. Install dependencies
+### 3. Install dependencies
 
 pip install -r requirements.txt
 
-4. Run the backend server
+### 4. Run the backend server
 flask run
 By default, the backend runs on:
 http://localhost:5000
 
-🎨 Frontend Setup (Next.js)
-1. Install Node.js
+## 🎨 Frontend Setup (Next.js)
+### 1. Install Node.js
 Make sure you have Node.js (>=18) installed.
 
-2. Navigate to frontend
+### 2. Navigate to frontend
 cd frontend/frontend
 
-4. Install dependencies
+### 4. Install dependencies
 npm install
 
-6. Run the frontend server
+### 6. Run the frontend server
 npm run dev
 
 Frontend runs on:
 http://localhost:3000
 
-📂 Project Structure
+## 📂 Project Structure
 ```
 ├── backend/              # Flask backend
 │   ├── app.py            # App entry
@@ -69,12 +69,12 @@ http://localhost:3000
     ├── lib/api.ts        # API wrapper
     └── package.json      # Node dependencies
 ```
-✅ Usage
+## ✅ Usage
 - Start the backend (flask run)
 - Start the frontend (npm run dev)
 - Open your browser at http://localhost:3000
 
-🔮 Roadmap
+## 🔮 Roadmap
 - Add user profile pages
 - Implement input validation and user prompts
 - Deploy to production (Docker + CI/CD)
