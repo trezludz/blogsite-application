@@ -1,6 +1,6 @@
 # 📝 Blog Platform (Flask + Next.js)
 
-A simple full-stack blog application with authentication, posts, and comments.  
+A simple full-stack blog application with authentication, posts, and comments.
 Backend is built with **Flask**, frontend with **Next.js (React + TypeScript)**.
 
 ---
