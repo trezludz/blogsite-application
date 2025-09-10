@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import API from "./lib/api";
 import PostCard from "./components/PostCard";
+import { LogoutButton } from "./components/LogoutButton";
+
 
 interface BlogPost {
   id: number;
@@ -36,6 +38,17 @@ export default function Home() {
 
   const [popularPosts, setPopularPosts] = useState<PopularPost[]>([]);
   const [recentComments, setRecentComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+
+    useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+    } else {
+      setLoading(false);
+    }
+  }, [router]);
 
   useEffect(() => {
     API.getPosts(page, search).then((res) => {
@@ -60,7 +73,10 @@ export default function Home() {
 
   return (
     <div className="mx-auto p-6">
-      <div className="flex flex-row flex-[0_0_30%] gap-6">
+       {loading ? (
+        <p className="text-center mt-10">Checking authentication...</p>
+      ) : (
+      <div className="flex md:flex-row flex-col flex-[0_0_30%] gap-6">
         {/* Sidebar */}
         <aside className="w-1/3 space-y-8 ml-8">
           {/* Popular Posts */}
@@ -119,6 +135,7 @@ export default function Home() {
             >
               New Post
             </button>
+            <LogoutButton />
           </div>
 
           <input
@@ -161,6 +178,7 @@ export default function Home() {
         </div>
         <div className="flex-[0_0_20%]"></div>
       </div>
+      )};
     </div>
   );
 }

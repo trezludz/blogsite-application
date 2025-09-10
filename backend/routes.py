@@ -4,20 +4,33 @@ import json
 from flask import Blueprint, request, jsonify, current_app 
 from sqlalchemy import or_ 
 from models import db, BlogPost, Comment 
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 
 # Create Post 
-@bp.route("/posts", methods=["POST"]) 
-def create_post(): 
-    data = request.get_json() 
-    if not data.get("title") or not data.get("content") or not data.get("author"): 
-        return jsonify({"error": "Missing fields"}), 400 
-    post = BlogPost( title=data["title"], content=data["content"], author=data["author"] ) 
-    db.session.add(post) 
-    db.session.commit() # Invalidate Redis caches 
-    current_app.redis.delete("popular_posts:views") 
-    current_app.redis.delete("popular_posts:comments") 
+@bp.route("/posts", methods=["POST"])
+@jwt_required()
+def create_post():
+    data = request.get_json()
+    if not data.get("title") or not data.get("content"):
+        return jsonify({"error": "Missing title or content"}), 400
+
+    #Get the username of the logged-in user
+    current_user = get_jwt_identity()
+
+    post = BlogPost(
+        title=data["title"],
+        content=data["content"],
+        author=current_user  # use JWT identity instead of trusting client
+    )
+    db.session.add(post)
+    db.session.commit()
+
+    # Invalidate Redis caches
+    current_app.redis.delete("popular_posts:views")
+    current_app.redis.delete("popular_posts:comments")
+
     return jsonify({"message": "Post created", "id": post.id}), 201
 
 # Get All Posts (with pagination + search)
@@ -34,28 +47,27 @@ def get_posts():
     return jsonify({ "posts": result, "total": pagination.total, "page": pagination.page, "pages": pagination.pages, })
 
 # Get One Post
-@bp.route("/posts/<int:id>", methods=["GET"])
-def get_post(id):
+@bp.route("/posts/<int:id>", methods=["PUT"])
+@jwt_required()
+def update_post(id):
     post = BlogPost.query.get_or_404(id)
+    data = request.get_json()
 
-    # Increment views
-    post.views = (post.views or 0) + 1
+    current_user = get_jwt_identity()
+    if post.author != current_user:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    post.title = data.get("title", post.title)
+    post.content = data.get("content", post.content)
     db.session.commit()
 
-    # Invalidate cache for popular posts
     current_app.redis.delete("popular_posts:views")
+    current_app.redis.delete("popular_posts:comments")
 
-    # Fetch comments for the post
-    comments = Comment.query.filter_by(post_id=post.id)\
-                            .order_by(Comment.created_at.asc())\
-                            .all()
+    comments = Comment.query.filter_by(post_id=post.id).order_by(Comment.created_at.asc()).all()
     comment_list = [
-        {
-            "id": c.id,
-            "author": c.author,
-            "content": c.content,
-            "created_at": c.created_at.isoformat(),
-        } for c in comments
+        {"id": c.id, "author": c.author, "content": c.content, "created_at": c.created_at.isoformat()}
+        for c in comments
     ]
 
     return jsonify({
@@ -69,15 +81,23 @@ def get_post(id):
     })
 
 
+
 # Update Post
 @bp.route("/posts/<int:id>", methods=["PUT"])
+@jwt_required()
 def update_post(id):
     post = BlogPost.query.get_or_404(id)
     data = request.get_json()
 
+    # ✅ Get current logged-in user
+    current_user = get_jwt_identity()
+
+    # ✅ Ensure only the author can update
+    if post.author != current_user:
+        return jsonify({"error": "Unauthorized"}), 403
+
     post.title = data.get("title", post.title)
     post.content = data.get("content", post.content)
-    post.author = data.get("author", post.author)
 
     db.session.commit()
 
@@ -87,11 +107,17 @@ def update_post(id):
 
     return jsonify({"message": "Post updated"})
 
-
 # Delete Post
 @bp.route("/posts/<int:id>", methods=["DELETE"])
+@jwt_required()
 def delete_post(id):
     post = BlogPost.query.get_or_404(id)
+
+    # ✅ Only the author can delete their own post
+    current_user = get_jwt_identity()
+    if post.author != current_user:
+        return jsonify({"error": "Unauthorized"}), 403
+
     db.session.delete(post)
     db.session.commit()
 
@@ -104,17 +130,22 @@ def delete_post(id):
 
 # Create Comment
 @bp.route("/posts/<int:post_id>/comments", methods=["POST"])
+@jwt_required()
 def create_comment(post_id):
+    print("Authorization header:", request.headers.get("Authorization"))
     post = BlogPost.query.get_or_404(post_id)
     data = request.get_json()
+    
+    if not data.get("content"):
+        return jsonify({"error": "Missing content"}), 400
 
-    if not data.get("content") or not data.get("author"):
-        return jsonify({"error": "Missing fields"}), 400
+    # Logged-in user is the author
+    current_user = get_jwt_identity()
 
     comment = Comment(
         post_id=post.id,
         content=data["content"],
-        author=data["author"]
+        author=current_user
     )
 
     db.session.add(comment)
@@ -155,15 +186,21 @@ def get_comments(post_id):
         "pages": pagination.pages
     })
 
-
 # Update Comment
 @bp.route("/comments/<int:id>", methods=["PUT"])
+@jwt_required()
 def update_comment(id):
     comment = Comment.query.get_or_404(id)
     data = request.get_json()
 
-    comment.content = data.get("content", comment.content)
-    comment.author = data.get("author", comment.author)
+    # ✅ Only the author can edit their own comment
+    current_user = get_jwt_identity()
+    if comment.author != current_user:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    # ✅ Only update content, never author
+    if "content" in data and data["content"].strip():
+        comment.content = data["content"]
 
     db.session.commit()
 
@@ -173,11 +210,17 @@ def update_comment(id):
 
     return jsonify({"message": "Comment updated"})
 
-
 # Delete Comment
 @bp.route("/comments/<int:id>", methods=["DELETE"])
+@jwt_required()
 def delete_comment(id):
     comment = Comment.query.get_or_404(id)
+
+    # ✅ Only the author can delete their own comment
+    current_user = get_jwt_identity()
+    if comment.author != current_user:
+        return jsonify({"error": "Unauthorized"}), 403
+
     db.session.delete(comment)
     db.session.commit()
 

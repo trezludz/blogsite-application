@@ -1,34 +1,28 @@
 "use client";
-
 import { useState } from "react";
+import API from "../lib/api";
 
 export function CommentForm({ postId }: { postId: number }) {
-  const [author, setAuthor] = useState("");
   const [content, setContent] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch(`http://localhost:5000/api/posts/${postId}/comments`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ author, content }),
-    });
-    if (res.ok) {
+    if (!content.trim()) {
+      alert("Comment cannot be empty");
+      return;
+    }
+
+    try {
+      await API.createComment(postId, { content: content.trim() });
       window.location.reload();
-    } else {
-      alert("Failed to add comment");
+    } catch (err: any) {
+      console.error("Failed to add comment:", err);
+      alert(`Failed to add comment: ${err.message || "Unknown error"}`);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
-      <input
-        className="w-full border p-2 rounded"
-        placeholder="Your name"
-        value={author}
-        onChange={(e) => setAuthor(e.target.value)}
-        required
-      />
       <textarea
         className="w-full border p-2 rounded"
         placeholder="Comment"
@@ -37,7 +31,9 @@ export function CommentForm({ postId }: { postId: number }) {
         rows={3}
         required
       />
-      <button className="bg-blue-600 text-white px-4 py-2 rounded">Add Comment</button>
+      <button className="bg-blue-600 text-white px-4 py-2 rounded">
+        Add Comment
+      </button>
     </form>
   );
 }

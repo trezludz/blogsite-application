@@ -9,12 +9,16 @@ interface Post {
 
 export default function PostCard({ post }: { post: Post }) {
   return (
-    <div className="p-4 border rounded-lg shadow hover:bg-gray-50 transition">
-      <Link href={`/blog/${post.id}`}>
+   <div>
+    <Link href={`/blog/${post.id}`}>
+    <div className="p-2 border rounded-lg shadow hover:bg-gray-500 transition">
+      
         <h2 className="text-xl font-semibold cursor-pointer">{post.title}</h2>
-      </Link>
+      
       <p className="text-gray-600">by {post.author}</p>
       <p className="text-gray-600">Views: {post.views}</p>
+    </div>
+    </Link>
     </div>
   );
 }

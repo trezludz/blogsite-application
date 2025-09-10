@@ -1,18 +1,18 @@
 "use client";
 
-export function DeleteCommentButton({ id }: { id: number }) {
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this comment?")) return;
+import API from "../lib/api";
 
-    const res = await fetch(`http://localhost:5000/api/comments/${id}`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
-      window.location.reload();
-    } else {
-      alert("Failed to delete comment");
-    }
-  };
+export function DeleteCommentButton({ id }: { id: number }) {
+const handleDelete = async () => {
+  if (!confirm("Are you sure you want to delete this comment?")) return;
+
+  try {
+    await API.deleteComment(id);
+    window.location.reload();
+  } catch (err: any) {
+    alert(`Failed to delete comment: ${err.message}`);
+  }
+};
 
   return (
     <button
