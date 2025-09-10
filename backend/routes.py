@@ -89,10 +89,10 @@ def update_post(id):
     post = BlogPost.query.get_or_404(id)
     data = request.get_json()
 
-    # ✅ Get current logged-in user
+    #Get current logged-in user
     current_user = get_jwt_identity()
 
-    # ✅ Ensure only the author can update
+    #Ensure only the author can update
     if post.author != current_user:
         return jsonify({"error": "Unauthorized"}), 403
 
@@ -113,7 +113,7 @@ def update_post(id):
 def delete_post(id):
     post = BlogPost.query.get_or_404(id)
 
-    # ✅ Only the author can delete their own post
+    # Only the author can delete their own post
     current_user = get_jwt_identity()
     if post.author != current_user:
         return jsonify({"error": "Unauthorized"}), 403
@@ -193,12 +193,12 @@ def update_comment(id):
     comment = Comment.query.get_or_404(id)
     data = request.get_json()
 
-    # ✅ Only the author can edit their own comment
+    # Only the author can edit their own comment
     current_user = get_jwt_identity()
     if comment.author != current_user:
         return jsonify({"error": "Unauthorized"}), 403
 
-    # ✅ Only update content, never author
+    # Only update content, never author
     if "content" in data and data["content"].strip():
         comment.content = data["content"]
 

@@ -18,7 +18,6 @@ export function BlogActions({
   const [currentUser, setCurrentUser] = useState<string | null>(null);
 
   useEffect(() => {
-    // ✅ Pull username from localStorage (set at login)
     const user = localStorage.getItem("username");
     setCurrentUser(user);
   }, []);
@@ -35,7 +34,6 @@ export function BlogActions({
     }
   };
 
-  // ✅ Don’t render if not the author
   if (!currentUser || currentUser !== author) {
     return null;
   }

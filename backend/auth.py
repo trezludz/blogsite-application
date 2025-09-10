@@ -36,5 +36,5 @@ def login():
 
     return jsonify({
         "access_token": access_token,
-        "username": user.username   # ✅ include username
+        "username": user.username 
     }), 200

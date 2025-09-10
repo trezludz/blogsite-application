@@ -25,7 +25,6 @@ export default function BlogDetail({ params }: { params: { id: string } }) {
   const [content, setContent] = useState("");
   const [currentUser, setCurrentUser] = useState<string | null>(null);
 
-  // 🔒 Protect route
   useEffect(() => {
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
@@ -112,7 +111,7 @@ const handleSave = async () => {
           <h1 className="text-3xl font-bold mb-2">{blog.title}</h1>
           <p className="text-gray-500 mb-4">By {blog.author}</p>
 
-          {/* ✅ Only show BlogActions if current user is the author */}
+          {/*Only show BlogActions if current user is the author */}
           {currentUser === blog.author && (
             <BlogActions
               postId={blog.id}

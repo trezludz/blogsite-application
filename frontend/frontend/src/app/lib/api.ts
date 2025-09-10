@@ -22,7 +22,7 @@ async function request(endpoint: string, options: RequestInit = {}) {
 }
 
 const API = {
-  // POSTS
+  // BLOG POSTS
   getPosts: (page = 1, search = "") =>
     request(`/posts?page=${page}&search=${encodeURIComponent(search)}`),
 
