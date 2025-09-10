@@ -55,6 +55,7 @@ Frontend runs on:
 http://localhost:3000
 
 📂 Project Structure
+```
 ├── backend/              # Flask backend
 │   ├── app.py            # App entry
 │   ├── auth.py           # Auth routes (login, signup, refresh)
@@ -67,13 +68,13 @@ http://localhost:3000
     ├── components/       # React components
     ├── lib/api.ts        # API wrapper
     └── package.json      # Node dependencies
-
+```
 ✅ Usage
-Start the backend (flask run)
-Start the frontend (npm run dev)
-Open your browser at http://localhost:3000
+- Start the backend (flask run)
+- Start the frontend (npm run dev)
+- Open your browser at http://localhost:3000
 
 🔮 Roadmap
-Add user profile pages
-Implement input validation and user prompts
-Deploy to production (Docker + CI/CD)
+- Add user profile pages
+- Implement input validation and user prompts
+- Deploy to production (Docker + CI/CD)
